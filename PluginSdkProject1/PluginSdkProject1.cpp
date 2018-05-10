@@ -277,7 +277,7 @@ public:
 				CHud::SetHelpMessage("imad is gay", false, false, true);
 
 			}
-		};
+		};       
 		*/
 		//float playerh = FindPlayerPed()->m_fHealth;
 		//FindPlayerPed()->m_fHealth;
