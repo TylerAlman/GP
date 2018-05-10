@@ -407,14 +407,26 @@ public:
 		supfile.close();
 
 		//process ceation testing 
-		/*
-		std::printf("imad is gay");
-		std::getchar();
-		TCHAR *args[2];
+		// Retrieve process ID
+		DWORD pID = GetTargetThreadIDFromProcName("notepad.exe");
 
-		args[0] = "timeout";
-		args[1] = "100";
+		// Get the dll's full path name
+		char buf[MAX_PATH] = { 0 };
+		GetFullPathName("Project1.dll", MAX_PATH, buf, NULL);
+		printf(buf);
+		printf("\n");
 
-		cr(1, args);*/
+		// Inject our main dll
+		if (!Inject(pID, buf))
+		{
+
+			printf("DLL Not Loaded!");
+		}
+		else {
+			printf("DLL Loaded!");
+		}
+
+		_getch();
+		
 	}
 } PluginSdkProject1;
