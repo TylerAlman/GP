@@ -17,6 +17,13 @@
 #include <tlhelp32.h> 
 #include <shlwapi.h> 
 #include <conio.h> 
+#include <GdiPlusGraphics.h> 
+#include <GdiPlus.h>  
+#include "CSprite2d.h"
+#include "CFileLoader.h"
+#include "common.h"
+
+
 
 #ifndef _USE_OLD_IOSTREAMS
 
@@ -247,6 +254,8 @@ std::string kayne(std::string  text, int k) {
 class PluginSdkProject1 {
 public:
 	PluginSdkProject1() {
+		static RwTexDictionary *m_txd;
+		static RwTexture *m_speedometerTex;
 		
 		//AllocConsole();
 
@@ -306,7 +315,7 @@ public:
 					HDC wdc = GetDC(hwnd);
 					DrawText(wdc, hearts, numhearts, &rect, DT_NOCLIP | DT_INTERNAL);
 					*/
-
+					
 				}
 				else {
 					CHud::GetRidOfAllHudMessages();
@@ -316,10 +325,25 @@ public:
 				//std::string gameName = std::string("D3DXFont example for GTA ") + GTAGAME_NAME;
 				//DrawTextA(NULL, gameName.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_RGBA(255, 255, 0, 255))
 
-
+				//DrawTexture(string filename, int index, int level, int time, Point pos, Size size, float rotation, Color color);
+				//.Native::Function::Call(Native::Hash::DRAW_SPRITE,char* textureDict, char* textureName, float screenX, float screenY, float width, float height, float heading, int red, int green, int blue, int alpha);
+				//DrawIcon("a");]
+				
 			}
 		};
+		Events::initRwEvent += [] {
+			// Load txd and texture
+			m_txd = CFileLoader::LoadTexDictionary(GAME_PATH("models\\speedometer.txd"));
+			m_speedometerTex = GetFirstTexture(m_txd);
+		};
+		Events::drawHudEvent += [] {
+			CRect const& rect= CRect(SCREEN_COORD_RIGHT(64.0f + 290.0f), SCREEN_COORD_BOTTOM(40.0f + 290.0f), SCREEN_COORD_RIGHT(64.0f), SCREEN_COORD_BOTTOM(40.0f));
+			CRGBA const& color= CRGBA(255, 255, 255, 255);
+			CSprite2d::SetVertices(rect, color, color, color, color, 0.0f, 0.0f, 291.0f / 1024.0f, 0.0f, 0.0f, 291.0f / 512.0f, 291.0f / 1024.0f, 291.0f / 512.0f);
+			RwIm2DRenderPrimitive(rwPRIMTYPETRIFAN, CSprite2d::maVertices, 4);
+			RwRenderStateSet(rwRENDERSTATETEXTURERASTER, m_speedometerTex);
 
+		};
 
 		//std::string s= "imad is gay"+std::to_string(playerh);
 		//char message[20];
