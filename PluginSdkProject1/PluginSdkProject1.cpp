@@ -17,11 +17,13 @@
 #include <tlhelp32.h> 
 #include <shlwapi.h> 
 #include <conio.h> 
-#include <GdiPlusGraphics.h> 
-#include <GdiPlus.h>  
+//#include <GdiPlusGraphics.h> 
+//#include <GdiPlus.h>  
 #include "CSprite2d.h"
 #include "CFileLoader.h"
 #include "common.h"
+#include "CTxdStore.h" 
+#include "CFont.h" 
 
 
 
@@ -255,8 +257,8 @@ class PluginSdkProject1 {
 public:
 	PluginSdkProject1() {
 		static RwTexDictionary *m_txd;
-		static RwTexture *m_speedometerTex;
-		
+		static RwTexture *m_hearts;
+		//static CSprite2d hearts;
 		//AllocConsole();
 
 		// Update the C/C++ runtime standard input, output, and error targets to use the console window
@@ -270,18 +272,22 @@ public:
 		//imad is gay 
 		//	};
 		//imad is gay
-		/*
+		//wchar_t string2[256] = { 'f','u','c','k' };
 		Events::gameProcessEvent += [] {
+			//wchar_t string2[256] = { 'f','u','c','k' };
 			if (KeyPressed(VK_CONTROL)) {
-				CHud::SetHelpMessage("imad is gay", false, false, true);
+				//CHud::SetHelpMessage(" ", false, true, true);
+				//CHud::ReInitialise();
+				//CFont::PrintString(20.0, 20.0, string2);
+					
 
 			}
 		};       
-		*/
+		
 		//float playerh = FindPlayerPed()->m_fHealth;
 		//FindPlayerPed()->m_fHealth;
 
-
+		/*
 
 		Events::processScriptsEvent += [] {
 			CPed *playa;
@@ -303,7 +309,8 @@ public:
 					//CHud::GetRidOfAllHudMessages();
 					//std::string s = std::to_string(numhearts);
 					//char const *pchar = s.c_str();
-					CHud::SetHelpMessage(hearts, false, true, true);//distplay hearts
+					//CHud::SetHelpMessage(hearts, false, true, true);//distplay hearts
+					CHud::SetHelpMessage(hearts, false, false, true);//distplay hearts
 
 					//better verison working on below
 					/*char WindowName[] = "GTA: Vice City";
@@ -315,7 +322,7 @@ public:
 					HDC wdc = GetDC(hwnd);
 					DrawText(wdc, hearts, numhearts, &rect, DT_NOCLIP | DT_INTERNAL);
 					*/
-					
+					/*
 				}
 				else {
 					CHud::GetRidOfAllHudMessages();
@@ -330,18 +337,105 @@ public:
 				//DrawIcon("a");]
 				
 			}
-		};
+		};*/
+		/*
 		Events::initRwEvent += [] {
+			
 			// Load txd and texture
-			m_txd = CFileLoader::LoadTexDictionary(GAME_PATH("models\\speedometer.txd"));
-			m_speedometerTex = GetFirstTexture(m_txd);
-		};
+			//m_txd = CFileLoader::LoadTexDictionary("models\\fonts.txd");
+			//m_speedometerTex = GetFirstTexture(m_txd);
+			int txd = CTxdStore::AddTxdSlot("mytxd");
+			// Load our txd into the selected slot 
+			CTxdStore::LoadTxd(txd, "models\\heat.txd");
+			// Increase the usage count for the created txd 
+			CTxdStore::AddRef(txd);
+			// Save the current txd 
+			CTxdStore::PushCurrentTxd();
+			// Set our txd as current 
+			CTxdStore::SetCurrentTxd(txd);
+			// Assign text to our sprite 
+			hearts.SetTexture("heart", "heartA");
+			// Restore the saved txd 
+			CTxdStore::PopCurrentTxd();
+			
+		};*/
 		Events::drawHudEvent += [] {
-			CRect const& rect= CRect(SCREEN_COORD_RIGHT(64.0f + 290.0f), SCREEN_COORD_BOTTOM(40.0f + 290.0f), SCREEN_COORD_RIGHT(64.0f), SCREEN_COORD_BOTTOM(40.0f));
-			CRGBA const& color= CRGBA(255, 255, 255, 255);
-			CSprite2d::SetVertices(rect, color, color, color, color, 0.0f, 0.0f, 291.0f / 1024.0f, 0.0f, 0.0f, 291.0f / 512.0f, 291.0f / 1024.0f, 291.0f / 512.0f);
-			RwIm2DRenderPrimitive(rwPRIMTYPETRIFAN, CSprite2d::maVertices, 4);
-			RwRenderStateSet(rwRENDERSTATETEXTURERASTER, m_speedometerTex);
+			CPed *playa;
+			wchar_t string[256] = { 'f','u','c','k' ,'w','c' ,'h','a' ,'r','_' ,'T','{' };
+			if (Command<Commands::IS_PLAYER_PLAYING>(0))
+			{
+				Command<0x01F5>(0, &playa);
+				float fheath = playa->m_fHealth;
+				float famour = playa->m_fArmour;
+				int numhearts = int(floor(fheath / 20));
+				int numAhearts = int(floor(famour / 20));
+				//numAhearts = numhearts- numAhearts ;
+				wchar_t  hearts[11] = { '\0' };
+				wchar_t  aHearts[11] = { '\0' };
+
+				for (int c = 0; c < numhearts; c++) {
+					hearts[c] = '{';
+				}
+				for (int c = 0; c < numAhearts; c++) {
+					aHearts[c] = '{';
+				}
+				
+				if (playa->m_fHealth > 10) {
+					CFont::SetColor(CRGBA(240, 37, 37, 200));
+					CFont::SetBackgroundOff();
+					//CFont::SetBackgroundOn();
+					CFont::SetBackgroundColor(CRGBA(240, 37, 37, 0));
+					//CFont::SetWrapx(450.0);
+					//CFont::SetBackGroundOnlyTextOn;
+					//CFont::RenderFontBuffer();
+					//CFont::DrawFonts();
+					CFont::PrintString(20.0, 17.0, hearts);
+					CHud::SetHelpMessage(" ", false, true, true);
+
+				}
+				if (playa->m_fArmour > 0) {
+					CFont::SetColor(CRGBA(255, 255, 25, 255));
+					CFont::SetBackgroundOff();
+					//CFont::SetBackgroundOn();
+					CFont::SetBackgroundColor(CRGBA(225, 37, 37, 0));
+					//CFont::SetWrapx(450.0);
+					//CFont::SetBackGroundOnlyTextOn;
+					//CFont::RenderFontBuffer();
+					//CFont::DrawFonts();
+					CFont::PrintString(20.0, 40.0, aHearts);
+					//CHud::SetHelpMessage(" ", false, true, true);
+
+				}
+
+			}
+				//Events::drawingEvent += [] {
+				//Events::processScriptsEvent += [] {
+
+						//CHud::SetHelpMessage("vghv", false, false, true);
+				//CRect const& rect = CRect(SCREEN_COORD_RIGHT(64.0f + 290.0f), SCREEN_COORD_BOTTOM(40.0f + 290.0f), SCREEN_COORD_RIGHT(64.0f), SCREEN_COORD_BOTTOM(40.0f));
+				//CRGBA const& color = CRGBA(255, 255, 255, 127);
+				//CSprite2d::SetVertices(rect, color, color, color, color, 0.0f, 0.0f, 291.0f / 1024.0f, 0.0f, 0.0f, 291.0f / 512.0f, 291.0f / 1024.0f, 291.0f / 512.0f);
+				//RwIm2DRenderPrimitive(rwPRIMTYPETRIFAN, CSprite2d::maVertices, 4);
+				//m_hearts= RwTexDictionaryFindNamedTexture(m_txd, "a");
+				//m_hearts = GetFirstTexture(m_txd);
+				//RwRenderStateSet(rwRENDERSTATETEXTURERASTER, m_hearts->raster);
+				// Add a new slot for our txd 
+				
+				//std::wstring name(L"Steve Nash");
+				//const wchar_t* szName = name.c_str();
+				//const wchar_t* szName =L"g";
+				//wchar_t wcs[] = L"This is a simple string";
+				// Draw our sprite 
+				//CFont::SetBackgroundOff{};
+
+				
+
+
+				//CHud::ReInitialise();
+				//RwRenderStateSet(rwRENDERSTATETEXTURERASTER, hearts.m_pTexture->raster);
+				//hearts.Draw(rect,color);
+				//RwRasterRender( hearts.m_pTexture->raster,5,5);
+			
 
 		};
 
